@@ -6,8 +6,8 @@ import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 
-export default function AdminProjects() {
-  const [projects, setProjects] = useState([]);
+export default function AdminServices() {
+  const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -16,7 +16,7 @@ export default function AdminProjects() {
 
   useEffect(() => {
     checkAuth();
-    fetchProjects();
+    fetchServices();
   }, [searchTerm, currentPage]);
 
   const checkAuth = () => {
@@ -31,7 +31,7 @@ export default function AdminProjects() {
     }
   };
 
-  const fetchProjects = async () => {
+  const fetchServices = async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
@@ -40,17 +40,17 @@ export default function AdminProjects() {
         ...(searchTerm && { search: searchTerm }),
       });
 
-      const response = await fetch(`/api/projects?${params}`);
+      const response = await fetch(`/api/services?${params}`);
       const data = await response.json();
 
       if (response.ok) {
-        setProjects(data.projects || []);
+        setServices(data.services || []);
         setPagination(data.pagination || {});
       } else {
-        toast.error('Failed to fetch projects');
+        toast.error('Failed to fetch services');
       }
     } catch (error) {
-      console.error('Error fetching projects:', error);
+      console.error('Error fetching services:', error);
       toast.error('An error occurred');
     } finally {
       setLoading(false);
@@ -63,18 +63,18 @@ export default function AdminProjects() {
     }
 
     try {
-      const response = await fetch(`/api/projects/${id}`, {
+      const response = await fetch(`/api/services/${id}`, {
         method: 'DELETE',
       });
 
       if (response.ok) {
-        toast.success('Project deleted successfully');
-        fetchProjects();
+        toast.success('Service deleted successfully');
+        fetchServices();
       } else {
-        toast.error('Failed to delete project');
+        toast.error('Failed to delete service');
       }
     } catch (error) {
-      console.error('Error deleting project:', error);
+      console.error('Error deleting service:', error);
       toast.error('An error occurred');
     }
   };
@@ -114,14 +114,14 @@ export default function AdminProjects() {
               <Link href="/xd" className="text-blue-600 hover:text-blue-700">
                 ← Back to Dashboard
               </Link>
-              <h1 className="text-2xl font-bold text-gray-900">Manage Projects</h1>
+              <h1 className="text-2xl font-bold text-gray-900">Manage Services</h1>
             </div>
             
             <Link
-              href="/xd/projects/new"
+              href="/xd/services/new"
               className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
             >
-              New Project
+              New Service
             </Link>
           </div>
         </div>
@@ -139,7 +139,7 @@ export default function AdminProjects() {
           <div className="bg-white rounded-lg shadow p-4">
             <input
               type="text"
-              placeholder="Search projects..."
+              placeholder="Search services..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -154,8 +154,8 @@ export default function AdminProjects() {
           </div>
         ) : (
           <>
-            {/* Projects Table */}
-            {projects.length > 0 ? (
+            {/* Services Table */}
+            {services.length > 0 ? (
               <motion.div
                 variants={containerVariants}
                 initial="hidden"
@@ -170,13 +170,10 @@ export default function AdminProjects() {
                           Title
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Client
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Category
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Rating
+                          Features
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Date
@@ -187,59 +184,47 @@ export default function AdminProjects() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {projects.map((project, index) => (
+                      {services.map((service, index) => (
                         <motion.tr
-                          key={project._id}
+                          key={service._id}
                           variants={itemVariants}
                           className="hover:bg-gray-50"
                         >
                           <td className="px-6 py-4">
                             <div className="text-sm font-medium text-gray-900">
-                              {project.title}
+                              {service.title}
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {project.client}
-                          </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                              {project.category}
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                              {service.category}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              {[...Array(5)].map((_, i) => (
-                                <svg
-                                  key={i}
-                                  className={`w-4 h-4 ${i < project.rating ? 'text-yellow-400' : 'text-gray-300'}`}
-                                  fill="currentColor"
-                                  viewBox="0 0 20 20"
-                                >
-                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                </svg>
-                              ))}
+                          <td className="px-6 py-4">
+                            <div className="text-sm text-gray-500">
+                              {service.features?.length || 0} features
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {formatDate(project.createdAt)}
+                            {formatDate(service.createdAt)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div className="flex space-x-2">
                               <Link
-                                href="/projects"
+                                href="/services"
                                 target="_blank"
                                 className="text-green-600 hover:text-green-900"
                               >
                                 View
                               </Link>
                               <Link
-                                href={`/xd/projects/${project._id}/edit`}
+                                href={`/xd/services/${service._id}/edit`}
                                 className="text-blue-600 hover:text-blue-900"
                               >
                                 Edit
                               </Link>
                               <button
-                                onClick={() => handleDelete(project._id, project.title)}
+                                onClick={() => handleDelete(service._id, service.title)}
                                 className="text-red-600 hover:text-red-900"
                               >
                                 Delete
@@ -259,20 +244,20 @@ export default function AdminProjects() {
                 className="bg-white rounded-lg shadow p-12 text-center"
               >
                 <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No projects found</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No services found</h3>
                 <p className="text-gray-500 mb-4">
-                  {searchTerm ? 'Try adjusting your search' : 'Get started by creating your first project'}
+                  {searchTerm ? 'Try adjusting your search' : 'Get started by creating your first service'}
                 </p>
                 <Link
-                  href="/xd/projects/new"
+                  href="/xd/services/new"
                   className="inline-flex items-center bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
                 >
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
                   </svg>
-                  Create New Project
+                  Create New Service
                 </Link>
               </motion.div>
             )}
