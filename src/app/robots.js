@@ -1,11 +1,15 @@
 export default function robots() {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://makezaa.com';
+
   return {
     rules: [
       {
         userAgent: '*',
         allow: '/',
+        disallow: ['/xd/', '/api/'],
       },
     ],
-    sitemap: 'https://www.yourdomain.com/sitemap.xml',
+    sitemap: `${baseUrl}/sitemap.xml`,
   };
 }
+

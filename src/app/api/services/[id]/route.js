@@ -1,13 +1,10 @@
 import { NextResponse } from 'next/server';
-import connectDB from '@/lib/db';
-import Service from '@/models/Service';
-import { verifyToken, getTokenFromRequest } from '@/lib/auth';
+import { getServiceById, updateService, deleteService } from '@/models/Service';
+import { getTokenFromRequest, verifyToken } from '@/lib/auth';
 
 export async function GET(request, { params }) {
   try {
-    await connectDB();
-    
-    const service = await Service.findById(params.id);
+    const service = await getServiceById(params.id);
     
     if (!service) {
       return NextResponse.json(
@@ -15,12 +12,11 @@ export async function GET(request, { params }) {
         { status: 404 }
       );
     }
-    
+
     return NextResponse.json(service);
   } catch (error) {
-    console.error('Error fetching service:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to fetch service', details: error.message },
       { status: 500 }
     );
   }
@@ -29,14 +25,16 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     const token = getTokenFromRequest(request);
+    
     if (!token) {
       return NextResponse.json(
-        { error: 'Authentication required' },
+        { error: 'Not authenticated' },
         { status: 401 }
       );
     }
 
     const decoded = verifyToken(token);
+    
     if (!decoded) {
       return NextResponse.json(
         { error: 'Invalid token' },
@@ -44,34 +42,20 @@ export async function PUT(request, { params }) {
       );
     }
 
-    const { title, description, icon, category, features } = await request.json();
+    const data = await request.json();
+    const result = await updateService(params.id, data);
 
-    await connectDB();
-
-    const service = await Service.findById(params.id);
-    
-    if (!service) {
+    if (result.matchedCount === 0) {
       return NextResponse.json(
         { error: 'Service not found' },
         { status: 404 }
       );
     }
 
-    if (title) service.title = title;
-    if (description) service.description = description;
-    if (icon !== undefined) service.icon = icon;
-    if (category) service.category = category;
-    if (features !== undefined) service.features = features;
-    
-    service.updatedAt = new Date();
-
-    await service.save();
-
-    return NextResponse.json(service);
+    return NextResponse.json({ message: 'Service updated successfully' });
   } catch (error) {
-    console.error('Error updating service:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to update service', details: error.message },
       { status: 500 }
     );
   }
@@ -80,14 +64,16 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const token = getTokenFromRequest(request);
+    
     if (!token) {
       return NextResponse.json(
-        { error: 'Authentication required' },
+        { error: 'Not authenticated' },
         { status: 401 }
       );
     }
 
     const decoded = verifyToken(token);
+    
     if (!decoded) {
       return NextResponse.json(
         { error: 'Invalid token' },
@@ -95,11 +81,9 @@ export async function DELETE(request, { params }) {
       );
     }
 
-    await connectDB();
+    const result = await deleteService(params.id);
 
-    const service = await Service.findByIdAndDelete(params.id);
-    
-    if (!service) {
+    if (result.deletedCount === 0) {
       return NextResponse.json(
         { error: 'Service not found' },
         { status: 404 }
@@ -108,10 +92,10 @@ export async function DELETE(request, { params }) {
 
     return NextResponse.json({ message: 'Service deleted successfully' });
   } catch (error) {
-    console.error('Error deleting service:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to delete service', details: error.message },
       { status: 500 }
     );
   }
 }
+

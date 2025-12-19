@@ -6,12 +6,7 @@ export async function POST() {
     { status: 200 }
   );
 
-  response.cookies.set('token', '', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 0,
-  });
-
+  response.cookies.delete('auth-token');
   return response;
 }
+

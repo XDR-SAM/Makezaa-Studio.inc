@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
-import connectDB from '@/lib/db';
-import User from '@/models/User';
-import { hashPassword } from '@/lib/auth';
+import { createUser } from '@/models/User';
 
 export async function POST(request) {
   try {
@@ -14,34 +12,23 @@ export async function POST(request) {
       );
     }
 
-    await connectDB();
-
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return NextResponse.json(
-        { error: 'User already exists' },
-        { status: 400 }
-      );
-    }
-
-    const hashedPassword = await hashPassword(password);
-    const user = new User({
-      email,
-      password: hashedPassword,
-      role: 'admin'
-    });
-
-    await user.save();
-
+    const user = await createUser(email, password);
+    
     return NextResponse.json(
-      { message: 'User created successfully' },
+      { message: 'User created successfully', user },
       { status: 201 }
     );
   } catch (error) {
-    console.error('Registration error:', error);
+    if (error.message === 'User already exists') {
+      return NextResponse.json(
+        { error: 'User already exists' },
+        { status: 409 }
+      );
+    }
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to create user', details: error.message },
       { status: 500 }
     );
   }
 }
+

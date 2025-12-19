@@ -1,47 +1,37 @@
-import { Inter } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Toaster } from 'react-hot-toast';
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import { Toaster } from "react-hot-toast";
 
-const inter = Inter({
+const geistSans = Geist({
+  variable: "--font-geist-sans",
   subsets: ["latin"],
-  variable: "--font-inter",
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
 });
 
 export const metadata = {
-  title: "Makezaa - Professional Web Development & Digital Marketing Agency",
-  description: "Makezaa is a professional agency providing web development services, SEO optimization, and digital marketing solutions for clients in US, Canada, and EU.",
+  title: "Makezaa - Web Development, SEO & Digital Marketing Agency",
+  description: "Professional web development services, SEO optimization, and digital marketing solutions for businesses in the US, Canada, and EU.",
   keywords: "web development, SEO, digital marketing, agency, US, Canada, EU",
-  authors: [{ name: "Makezaa Agency" }],
-  openGraph: {
-    title: "Makezaa - Professional Web Development & Digital Marketing Agency",
-    description: "Professional web development, SEO, and digital marketing services for businesses worldwide.",
-    type: "website",
-  },
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} font-sans antialiased`}>
-        <div className="min-h-screen flex flex-col">
-          <Navbar />
-          <main className="flex-1">
-            {children}
-          </main>
-          <Footer />
-        </div>
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: '#363636',
-              color: '#fff',
-            },
-          }}
-        />
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
+      >
+        <Navbar />
+        <main className="flex-grow">
+          {children}
+        </main>
+        <Footer />
+        <Toaster position="top-right" />
       </body>
     </html>
   );

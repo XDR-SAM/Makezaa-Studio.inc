@@ -1,14 +1,18 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
-if (!JWT_SECRET) {
-  throw new Error('JWT_SECRET is not defined in environment variables');
+export function hashPassword(password) {
+  return bcrypt.hashSync(password, 10);
 }
 
-export function generateToken(payload) {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
+export function verifyPassword(password, hashedPassword) {
+  return bcrypt.compareSync(password, hashedPassword);
+}
+
+export function generateToken(userId, email) {
+  return jwt.sign({ userId, email }, JWT_SECRET, { expiresIn: '7d' });
 }
 
 export function verifyToken(token) {
@@ -19,19 +23,21 @@ export function verifyToken(token) {
   }
 }
 
-export async function hashPassword(password) {
-  const saltRounds = 12;
-  return await bcrypt.hash(password, saltRounds);
-}
-
-export async function comparePassword(password, hashedPassword) {
-  return await bcrypt.compare(password, hashedPassword);
-}
-
-export function getTokenFromRequest(req) {
-  const authHeader = req.headers.get('authorization');
+export function getTokenFromRequest(request) {
+  const authHeader = request.headers.get('authorization');
   if (authHeader && authHeader.startsWith('Bearer ')) {
     return authHeader.substring(7);
   }
+  
+  // Also check cookies
+  const cookies = request.headers.get('cookie');
+  if (cookies) {
+    const tokenMatch = cookies.match(/auth-token=([^;]+)/);
+    if (tokenMatch) {
+      return tokenMatch[1];
+    }
+  }
+  
   return null;
 }
+

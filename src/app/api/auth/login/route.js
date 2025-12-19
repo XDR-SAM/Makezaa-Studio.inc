@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
-import connectDB from '@/lib/db';
-import User from '@/models/User';
-import { comparePassword, generateToken } from '@/lib/auth';
+import { getUserByEmail } from '@/models/User';
+import { verifyPassword, generateToken } from '@/lib/auth';
 
 export async function POST(request) {
   try {
@@ -14,9 +13,8 @@ export async function POST(request) {
       );
     }
 
-    await connectDB();
-
-    const user = await User.findOne({ email });
+    const user = await getUserByEmail(email);
+    
     if (!user) {
       return NextResponse.json(
         { error: 'Invalid credentials' },
@@ -24,45 +22,40 @@ export async function POST(request) {
       );
     }
 
-    const isPasswordValid = await comparePassword(password, user.password);
-    if (!isPasswordValid) {
+    const isValid = verifyPassword(password, user.password);
+    
+    if (!isValid) {
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
       );
     }
 
-    const token = generateToken({ 
-      userId: user._id, 
-      email: user.email, 
-      role: user.role 
-    });
-
+    const token = generateToken(user._id.toString(), user.email);
+    
     const response = NextResponse.json(
       { 
         message: 'Login successful',
-        user: {
-          id: user._id,
-          email: user.email,
-          role: user.role
-        }
+        user: { email: user.email, id: user._id.toString() },
+        token 
       },
       { status: 200 }
     );
 
-    response.cookies.set('token', token, {
+    // Set cookie
+    response.cookies.set('auth-token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
     });
 
     return response;
   } catch (error) {
-    console.error('Login error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Login failed', details: error.message },
       { status: 500 }
     );
   }
 }
+

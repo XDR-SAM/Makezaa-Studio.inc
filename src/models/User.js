@@ -1,26 +1,48 @@
-import { Schema, model, models } from 'mongoose';
+import clientPromise from '../lib/db';
+import { hashPassword } from '../lib/auth';
 
-const UserSchema = new Schema({
-  email: {
-    type: String,
-    unique: true,
-    required: true,
-  },
-  password: {
-    type: String,
-    required: true,
-  },
-  role: {
-    type: String,
-    enum: ['admin'],
-    default: 'admin'
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
+const DB_NAME = 'makezaa';
+const COLLECTION_NAME = 'users';
+
+export async function createUser(email, password) {
+  const client = await clientPromise;
+  const db = client.db(DB_NAME);
+  const collection = db.collection(COLLECTION_NAME);
+
+  // Check if user already exists
+  const existingUser = await collection.findOne({ email });
+  if (existingUser) {
+    throw new Error('User already exists');
   }
-});
 
-const User = models.User || model('User', UserSchema);
+  const hashedPassword = hashPassword(password);
+  
+  const user = {
+    email,
+    password: hashedPassword,
+    role: 'admin',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
 
-export default User;
+  const result = await collection.insertOne(user);
+  return { ...user, _id: result.insertedId, password: undefined };
+}
+
+export async function getUserByEmail(email) {
+  const client = await clientPromise;
+  const db = client.db(DB_NAME);
+  const collection = db.collection(COLLECTION_NAME);
+
+  return await collection.findOne({ email });
+}
+
+export async function getUserById(id) {
+  const client = await clientPromise;
+  const db = client.db(DB_NAME);
+  const collection = db.collection(COLLECTION_NAME);
+
+  const { ObjectId } = await import('mongodb');
+  return await collection.findOne({ _id: new ObjectId(id) });
+}
+

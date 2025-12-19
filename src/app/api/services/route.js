@@ -1,53 +1,19 @@
 import { NextResponse } from 'next/server';
-import connectDB from '@/lib/db';
-import Service from '@/models/Service';
-import { verifyToken, getTokenFromRequest } from '@/lib/auth';
+import { getServices, createService } from '@/models/Service';
+import { getTokenFromRequest, verifyToken } from '@/lib/auth';
 
 export async function GET(request) {
   try {
-    await connectDB();
-    
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page')) || 1;
-    const limit = parseInt(searchParams.get('limit')) || 10;
-    const category = searchParams.get('category');
-    const search = searchParams.get('search');
-    
-    let query = {};
-    
-    if (category && category !== 'all') {
-      query.category = category;
-    }
-    
-    if (search) {
-      query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } }
-      ];
-    }
+    const search = searchParams.get('search') || '';
+    const category = searchParams.get('category') || '';
 
-    const skip = (page - 1) * limit;
-    
-    const services = await Service.find(query)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
-    
-    const total = await Service.countDocuments(query);
-    
-    return NextResponse.json({
-      services,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit)
-      }
-    });
+    const filters = { search, category };
+    const services = await getServices(filters);
+    return NextResponse.json(services);
   } catch (error) {
-    console.error('Error fetching services:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to fetch services', details: error.message },
       { status: 500 }
     );
   }
@@ -56,14 +22,16 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const token = getTokenFromRequest(request);
+    
     if (!token) {
       return NextResponse.json(
-        { error: 'Authentication required' },
+        { error: 'Not authenticated' },
         { status: 401 }
       );
     }
 
     const decoded = verifyToken(token);
+    
     if (!decoded) {
       return NextResponse.json(
         { error: 'Invalid token' },
@@ -71,34 +39,18 @@ export async function POST(request) {
       );
     }
 
-    const { title, description, icon, category, features } = await request.json();
-
-    if (!title || !description || !category) {
-      return NextResponse.json(
-        { error: 'Title, description, and category are required' },
-        { status: 400 }
-      );
-    }
-
-    await connectDB();
-
-    const service = new Service({
-      title,
-      description,
-      icon,
-      category,
-      features: features || [],
-      createdByEmail: decoded.email
+    const data = await request.json();
+    const service = await createService({
+      ...data,
+      createdByEmail: decoded.email,
     });
-
-    await service.save();
 
     return NextResponse.json(service, { status: 201 });
   } catch (error) {
-    console.error('Error creating service:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to create service', details: error.message },
       { status: 500 }
     );
   }
 }
+
