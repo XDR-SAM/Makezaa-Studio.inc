@@ -1,78 +1,81 @@
+export const metadata = {
+    title: 'About Us | Makezaa',
+    description: 'Learn more about Makezaa - your trusted partner for web development, SEO, and digital marketing solutions.',
+};
+
 export default function AboutPage() {
-  return (
-    <div className="min-h-screen py-12">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            About Makezaa
-          </h1>
-          <p className="text-xl text-gray-600">
-            Your trusted partner in digital transformation
-          </p>
-        </div>
+    return (
+        <div className="container mx-auto px-4 py-12">
+            <div className="max-w-4xl mx-auto">
+                <h1 className="text-5xl font-bold mb-8 text-center">About Makezaa</h1>
 
-        <div className="prose max-w-none space-y-8">
-          <section className="bg-white rounded-lg shadow-md p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Who We Are</h2>
-            <p className="text-gray-700 leading-relaxed">
-              Makezaa is a professional digital agency specializing in web development, 
-              SEO optimization, and digital marketing solutions. We serve clients across 
-              the United States, Canada, and the European Union, helping businesses 
-              establish and grow their online presence.
-            </p>
-          </section>
+                <div className="prose prose-lg max-w-none">
+                    <p className="text-xl text-gray-600 mb-8 text-center">
+                        We are a professional digital agency specializing in web development,
+                        SEO optimization, and digital marketing solutions.
+                    </p>
 
-          <section className="bg-white rounded-lg shadow-md p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Our Mission</h2>
-            <p className="text-gray-700 leading-relaxed">
-              Our mission is to empower businesses with cutting-edge digital solutions 
-              that drive growth, enhance visibility, and deliver measurable results. 
-              We combine technical expertise with creative innovation to help our clients 
-              succeed in the digital landscape.
-            </p>
-          </section>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                        <div className="card bg-base-100 shadow-xl">
+                            <div className="card-body">
+                                <h2 className="card-title text-primary">Our Mission</h2>
+                                <p>
+                                    To empower businesses with cutting-edge digital solutions that
+                                    drive growth and success in the modern marketplace.
+                                </p>
+                            </div>
+                        </div>
 
-          <section className="bg-white rounded-lg shadow-md p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">What We Do</h2>
-            <ul className="list-disc list-inside text-gray-700 space-y-2">
-              <li><strong>Web Development:</strong> Custom websites and web applications built with modern technologies</li>
-              <li><strong>SEO Optimization:</strong> Improve your search engine rankings and organic visibility</li>
-              <li><strong>Digital Marketing:</strong> Comprehensive marketing strategies to reach your target audience</li>
-            </ul>
-          </section>
+                        <div className="card bg-base-100 shadow-xl">
+                            <div className="card-body">
+                                <h2 className="card-title text-primary">Our Vision</h2>
+                                <p>
+                                    To be the leading digital agency trusted by businesses across
+                                    the US, Canada, and EU for innovative and results-driven solutions.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
 
-          <section className="bg-white rounded-lg shadow-md p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Why Choose Us</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Expert Team</h3>
-                <p className="text-gray-700 text-sm">
-                  Our team consists of experienced developers, SEO specialists, and marketing experts.
-                </p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Proven Results</h3>
-                <p className="text-gray-700 text-sm">
-                  We deliver measurable results that help businesses grow and succeed.
-                </p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Client-Focused</h3>
-                <p className="text-gray-700 text-sm">
-                  Your success is our priority. We work closely with you to achieve your goals.
-                </p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Global Reach</h3>
-                <p className="text-gray-700 text-sm">
-                  Serving clients in the US, Canada, and EU with localized expertise.
-                </p>
-              </div>
+                    <h2 className="text-3xl font-bold mb-6">Why Choose Us?</h2>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                        <div className="text-center">
+                            <div className="text-4xl mb-4">🚀</div>
+                            <h3 className="font-semibold text-lg mb-2">Fast Delivery</h3>
+                            <p className="text-gray-600">
+                                We deliver projects on time without compromising quality
+                            </p>
+                        </div>
+
+                        <div className="text-center">
+                            <div className="text-4xl mb-4">💡</div>
+                            <h3 className="font-semibold text-lg mb-2">Expert Team</h3>
+                            <p className="text-gray-600">
+                                Our team consists of experienced professionals in their fields
+                            </p>
+                        </div>
+
+                        <div className="text-center">
+                            <div className="text-4xl mb-4">🎯</div>
+                            <h3 className="font-semibold text-lg mb-2">Results-Driven</h3>
+                            <p className="text-gray-600">
+                                We focus on delivering measurable results for your business
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="bg-primary text-white p-8 rounded-lg text-center">
+                        <h2 className="text-3xl font-bold mb-4">Ready to Work With Us?</h2>
+                        <p className="mb-6">
+                            Let's discuss how we can help your business grow
+                        </p>
+                        <a href="/contact" className="btn btn-lg bg-white text-primary hover:bg-gray-100">
+                            Get in Touch
+                        </a>
+                    </div>
+                </div>
             </div>
-          </section>
         </div>
-      </div>
-    </div>
-  );
+    );
 }
-

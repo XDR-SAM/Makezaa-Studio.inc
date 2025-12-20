@@ -1,100 +1,88 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import Image from 'next/image';
-import ReactMarkdown from 'react-markdown';
-import Spinner from '@/components/common/Spinner';
+import Link from 'next/link';
 
-export default function BlogDetailPage() {
-  const params = useParams();
-  const [blog, setBlog] = useState(null);
-  const [loading, setLoading] = useState(true);
+async function getBlog(slug) {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/blog/${slug}`, {
+        cache: 'no-store',
+    });
 
-  useEffect(() => {
-    if (params.slug) {
-      fetchBlog();
-    }
-  }, [params.slug]);
-
-  const fetchBlog = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(`/api/blog/${params.slug}`);
-      if (response.ok) {
-        const data = await response.json();
-        setBlog(data);
-      }
-    } catch (error) {
-      console.error('Error fetching blog:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
-
-  if (!blog) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Blog Post Not Found</h1>
-          <p className="text-gray-600">The blog post you're looking for doesn't exist.</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen py-12">
-      <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {blog.imageUrl && (
-          <div className="relative h-96 w-full mb-8 rounded-lg overflow-hidden">
-            <Image
-              src={blog.imageUrl}
-              alt={blog.title}
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
-        )}
-
-        <div className="bg-white rounded-lg shadow-md p-8">
-          <div className="flex items-center justify-between mb-4">
-            <span className="px-3 py-1 bg-blue-100 text-blue-600 text-sm font-semibold rounded-full">
-              {blog.category}
-            </span>
-            <span className="text-sm text-gray-500">
-              {new Date(blog.createdAt).toLocaleDateString()}
-            </span>
-          </div>
-
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">{blog.title}</h1>
-
-          {blog.createdByEmail && (
-            <p className="text-gray-600 mb-6">
-              <span className="font-semibold">Author:</span> {blog.createdByEmail}
-            </p>
-          )}
-
-          <div className="prose max-w-none">
-            <ReactMarkdown>{blog.content}</ReactMarkdown>
-          </div>
-
-          <div className="text-sm text-gray-500 mt-8 pt-8 border-t">
-            <p>Published: {new Date(blog.createdAt).toLocaleDateString()}</p>
-            {blog.views && <p>Views: {blog.views}</p>}
-          </div>
-        </div>
-      </article>
-    </div>
-  );
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.data;
 }
 
+export async function generateMetadata({ params }) {
+    const { slug } = await params;
+    const blog = await getBlog(slug);
+
+    if (!blog) {
+        return {
+            title: 'Blog Not Found',
+        };
+    }
+
+    return {
+        title: `${blog.title} | Makezaa Blog`,
+        description: blog.content.substring(0, 160),
+        openGraph: {
+            title: blog.title,
+            description: blog.content.substring(0, 160),
+            images: blog.imageUrl ? [blog.imageUrl] : [],
+        },
+    };
+}
+
+export default async function BlogDetailPage({ params }) {
+    const { slug } = await params;
+    const blog = await getBlog(slug);
+
+    if (!blog) {
+        notFound();
+    }
+
+    return (
+        <article className="container mx-auto px-4 py-12 max-w-4xl">
+            <Link href="/blog" className="btn btn-ghost btn-sm mb-6">
+                ← Back to Blog
+            </Link>
+
+            <header className="mb-8">
+                <div className="flex items-center gap-2 mb-4">
+                    <span className="badge badge-primary">{blog.category}</span>
+                    <span className="text-gray-500">
+                        {new Date(blog.createdAt).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                        })}
+                    </span>
+                </div>
+
+                <h1 className="text-4xl md:text-5xl font-bold mb-4">{blog.title}</h1>
+
+                {blog.imageUrl && (
+                    <div className="relative w-full h-96 rounded-lg overflow-hidden mb-6">
+                        <Image
+                            src={blog.imageUrl}
+                            alt={blog.title}
+                            fill
+                            className="object-cover"
+                            priority
+                        />
+                    </div>
+                )}
+            </header>
+
+            <div className="prose prose-lg max-w-none">
+                <div className="whitespace-pre-wrap">{blog.content}</div>
+            </div>
+
+            <footer className="mt-12 pt-8 border-t">
+                <p className="text-sm text-gray-500">
+                    Written by {blog.createdByEmail} • {blog.views || 0} views
+                </p>
+            </footer>
+        </article>
+    );
+}

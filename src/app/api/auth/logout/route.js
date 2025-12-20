@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 
 export async function POST() {
-  const response = NextResponse.json(
-    { message: 'Logout successful' },
-    { status: 200 }
-  );
+    const response = NextResponse.json(
+        { success: true, message: 'Logged out successfully' },
+        { status: 200 }
+    );
 
-  response.cookies.delete('auth-token');
-  return response;
+    // Clear the token cookie
+    response.cookies.delete('token');
+
+    return response;
 }
-

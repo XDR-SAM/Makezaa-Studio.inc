@@ -1,17 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactCompiler: true,
   images: {
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'i.ibb.co',
-      },
-      {
-        protocol: 'https',
-        hostname: '**.ibb.co',
+        pathname: '/**',
       },
     ],
+  },
+  // Optimize for Vercel deployment
+  experimental: {
+    optimizePackageImports: ['framer-motion', '@tanstack/react-query'],
   },
 };
 

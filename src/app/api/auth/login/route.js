@@ -1,62 +1,78 @@
 import { NextResponse } from 'next/server';
-import { getUserByEmail } from '@/models/User';
-import { verifyPassword, generateToken } from '@/lib/auth';
+import { getCollection } from '@/lib/db';
+import { comparePassword, generateToken } from '@/lib/auth';
+import { initializeDatabase } from '@/lib/seed';
 
 export async function POST(request) {
-  try {
-    const { email, password } = await request.json();
+    try {
+        const { email, password } = await request.json();
 
-    if (!email || !password) {
-      return NextResponse.json(
-        { error: 'Email and password are required' },
-        { status: 400 }
-      );
+        // Validate input
+        if (!email || !password) {
+            return NextResponse.json(
+                { error: 'Email and password are required' },
+                { status: 400 }
+            );
+        }
+
+        // Initialize database and seed admin if needed
+        await initializeDatabase();
+
+        // Find user
+        const usersCollection = await getCollection('users');
+        const user = await usersCollection.findOne({ email });
+
+        if (!user) {
+            return NextResponse.json(
+                { error: 'Invalid credentials' },
+                { status: 401 }
+            );
+        }
+
+        // Verify password
+        const isValidPassword = await comparePassword(password, user.password);
+
+        if (!isValidPassword) {
+            return NextResponse.json(
+                { error: 'Invalid credentials' },
+                { status: 401 }
+            );
+        }
+
+        // Generate token
+        const token = generateToken({
+            userId: user._id.toString(),
+            email: user.email,
+            role: user.role,
+        });
+
+        // Create response with token in cookie
+        const response = NextResponse.json(
+            {
+                success: true,
+                user: {
+                    email: user.email,
+                    role: user.role,
+                },
+            },
+            { status: 200 }
+        );
+
+        // Set HTTP-only cookie
+        response.cookies.set('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 60 * 60 * 24 * 7, // 7 days
+            path: '/',
+        });
+
+        return response;
+    } catch (error) {
+        console.error('Login error:', error);
+        return NextResponse.json(
+            { error: 'Internal server error' },
+            { status: 500 }
+        );
     }
-
-    const user = await getUserByEmail(email);
-    
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Invalid credentials' },
-        { status: 401 }
-      );
-    }
-
-    const isValid = verifyPassword(password, user.password);
-    
-    if (!isValid) {
-      return NextResponse.json(
-        { error: 'Invalid credentials' },
-        { status: 401 }
-      );
-    }
-
-    const token = generateToken(user._id.toString(), user.email);
-    
-    const response = NextResponse.json(
-      { 
-        message: 'Login successful',
-        user: { email: user.email, id: user._id.toString() },
-        token 
-      },
-      { status: 200 }
-    );
-
-    // Set cookie with proper settings for production
-    response.cookies.set('auth-token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: '/',
-    });
-
-    return response;
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Login failed', details: error.message },
-      { status: 500 }
-    );
-  }
 }
-

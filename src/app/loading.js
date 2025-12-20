@@ -1,6 +1,5 @@
-import Loading from '@/components/common/Loading';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
-export default function GlobalLoading() {
-  return <Loading />;
+export default function Loading() {
+    return <LoadingSpinner size="xl" fullScreen />;
 }
-
