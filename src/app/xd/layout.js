@@ -12,8 +12,13 @@ export default function AdminLayout({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Skip auth check for login page
+    if (pathname === '/xd/login') {
+      setLoading(false);
+      return;
+    }
     checkAuth();
-  }, []);
+  }, [pathname]);
 
   const checkAuth = async () => {
     try {
@@ -40,6 +45,11 @@ export default function AdminLayout({ children }) {
       toast.error('Logout failed');
     }
   };
+
+  // If on login page, render children without admin layout
+  if (pathname === '/xd/login') {
+    return <>{children}</>;
+  }
 
   if (loading) {
     return (
