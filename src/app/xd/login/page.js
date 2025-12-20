@@ -23,7 +23,7 @@ export default function LoginPage() {
     try {
       const response = await fetch('/api/auth/me');
       if (response.ok) {
-        router.push('/xd');
+        window.location.href = '/xd';
       }
     } catch (error) {
       // Not authenticated
@@ -54,7 +54,8 @@ export default function LoginPage() {
 
       if (response.ok) {
         toast.success('Login successful!');
-        router.push('/xd');
+        // Use window.location for hard redirect to ensure cookie is properly set
+        window.location.href = '/xd';
       } else {
         toast.error(data.error || 'Login failed');
       }
