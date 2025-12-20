@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import { uploadImageToImgBB } from '@/lib/imgbb';
-import { getTokenFromRequest, verifyToken } from '@/lib/auth';
+import { verifyToken } from '@/lib/auth';
 
 export async function POST(request) {
   try {
     // Check authentication
-    const token = getTokenFromRequest(request);
+    const token = request.cookies.get('auth-token')?.value;
     if (!token) {
       return NextResponse.json(
         { error: 'Not authenticated' },

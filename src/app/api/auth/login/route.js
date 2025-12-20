@@ -42,7 +42,7 @@ export async function POST(request) {
       { status: 200 }
     );
 
-    // Set cookie with proper domain and path settings for production
+    // Set cookie with proper settings for production
     response.cookies.set('auth-token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

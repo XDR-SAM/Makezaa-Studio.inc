@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServiceById, updateService, deleteService } from '@/models/Service';
-import { getTokenFromRequest, verifyToken } from '@/lib/auth';
+import { verifyToken } from '@/lib/auth';
 
 export async function GET(request, { params }) {
   try {
@@ -24,7 +24,7 @@ export async function GET(request, { params }) {
 
 export async function PUT(request, { params }) {
   try {
-    const token = getTokenFromRequest(request);
+    const token = request.cookies.get('auth-token')?.value;
     
     if (!token) {
       return NextResponse.json(
@@ -63,7 +63,7 @@ export async function PUT(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
-    const token = getTokenFromRequest(request);
+    const token = request.cookies.get('auth-token')?.value;
     
     if (!token) {
       return NextResponse.json(

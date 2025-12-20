@@ -23,17 +23,23 @@ export default function AdminLayout({ children }) {
   const checkAuth = async () => {
     try {
       const response = await fetch('/api/auth/me', {
-        credentials: 'include', // Ensure cookies are sent
+        credentials: 'include', // Ensure cookies are sent with cross-origin requests
+        cache: 'no-store', // Don't cache auth requests
       });
       if (response.ok) {
         const data = await response.json();
         setUser(data.user);
       } else {
-        // Use window.location for hard redirect to avoid client-side routing issues
-        window.location.href = '/xd/login';
+        // Only redirect if we're not already on login page
+        if (pathname !== '/xd/login') {
+          window.location.href = '/xd/login';
+        }
       }
     } catch (error) {
-      window.location.href = '/xd/login';
+      // Only redirect if we're not already on login page
+      if (pathname !== '/xd/login') {
+        window.location.href = '/xd/login';
+      }
     } finally {
       setLoading(false);
     }

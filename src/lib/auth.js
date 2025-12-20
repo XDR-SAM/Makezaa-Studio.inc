@@ -24,17 +24,26 @@ export function verifyToken(token) {
 }
 
 export function getTokenFromRequest(request) {
+  // Check authorization header first
   const authHeader = request.headers.get('authorization');
   if (authHeader && authHeader.startsWith('Bearer ')) {
     return authHeader.substring(7);
   }
   
-  // Also check cookies
-  const cookies = request.headers.get('cookie');
-  if (cookies) {
-    const tokenMatch = cookies.match(/auth-token=([^;]+)/);
+  // Use Next.js cookies API (ReadonlyRequestCookies)
+  if (request.cookies) {
+    const token = request.cookies.get('auth-token');
+    if (token) {
+      return token.value;
+    }
+  }
+  
+  // Fallback: check cookie header string (for compatibility)
+  const cookieHeader = request.headers.get('cookie');
+  if (cookieHeader) {
+    const tokenMatch = cookieHeader.match(/auth-token=([^;]+)/);
     if (tokenMatch) {
-      return tokenMatch[1];
+      return decodeURIComponent(tokenMatch[1]);
     }
   }
   

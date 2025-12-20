@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getProjects, createProject } from '@/models/Project';
-import { getTokenFromRequest, verifyToken } from '@/lib/auth';
+import { verifyToken } from '@/lib/auth';
 
 export async function GET(request) {
   try {
@@ -33,7 +33,7 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const token = getTokenFromRequest(request);
+    const token = request.cookies.get('auth-token')?.value;
     
     if (!token) {
       return NextResponse.json(

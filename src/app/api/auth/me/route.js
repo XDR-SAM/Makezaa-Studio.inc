@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
-import { getTokenFromRequest, verifyToken } from '@/lib/auth';
+import { verifyToken } from '@/lib/auth';
 import { getUserById } from '@/models/User';
 
 export async function GET(request) {
   try {
-    const token = getTokenFromRequest(request);
+    // Use Next.js cookies API directly
+    const token = request.cookies.get('auth-token')?.value;
     
     if (!token) {
       return NextResponse.json(
